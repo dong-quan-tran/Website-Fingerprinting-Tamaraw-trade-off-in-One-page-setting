@@ -1,4 +1,4 @@
-dataset=CW
+dataset=CW_tamaraw
 
 for filename in train valid test
 do 
