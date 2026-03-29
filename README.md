@@ -1,118 +1,157 @@
-# Website-Fingerprinting-Library (WFlib)
+***
 
-<p align="center">
-<img src=".\figures\wflib.jpg" height = "180" alt="" align=center />
-<br><br>
-</p>
+# Website Fingerprinting: Tamaraw Trade-off in the One-Page Setting
 
+This repository is a standalone research codebase built on top of Xiao Deng’s Website-Fingerprinting-Library (WFlib). It evaluates how the Tamaraw defense trades off bandwidth overhead and website-fingerprinting accuracy in the **one-page** closed-world setting, using four deep-learning attacks: **DF, TikTok, Var-CNN, and RF**.
 
-WFlib is a Pytorch-based open-source library for website fingerprinting attacks, intended for research purposes only.
+The code is intended for research purposes only.
 
-Website fingerprinting is a type of network attack in which an adversary attempts to deduce which website a user is visiting based on encrypted traffic patterns, even without directly seeing the content of the traffic.
+## Contents
 
-We provide a neat code base to evaluate 11 advanced DL-based WF attacks on multiple datasets. This library is derived from our ACM CCS 2024 paper. If you find this repo useful, please cite our paper.
+- Modified WFlib core for our experiments
+- Scripts to generate Tamaraw-defended datasets from CW traces
+- Scripts to build one-page datasets at different pad lengths
+- Training and evaluation scripts for DF, TikTok, Var-CNN, and RF on Tamaraw
+- Utilities to peek and summarize one-page results
 
-```bibtex
-@inproceedings{deng2024wflib,
-  title={Robust and Reliable Early-Stage Website Fingerprinting Attacks via Spatial-Temporal Distribution Analysis},
-  author={Deng, Xinhao and Li, Qi and Xu, Ke},
-  booktitle={Proceedings of the 2024 ACM SIGSAC Conference on Computer and Communications Security},
-  year={2024}
-}
+***
+
+## Environment setup
+
+We recommend a dedicated conda/venv environment (Python 3.8, PyTorch with CUDA).
+
+```bash
+# From WSL
+cd ~/Website-Fingerprinting-Library
+
+# (optional) create env
+conda create -n wf38 python=3.8
+conda activate wf38
+
+# install this project in editable mode
+pip install --user -e .
+pip install -r requirements.txt
 ```
 
-Contributions via pull requests are welcome and appreciated.
+***
 
-## WFlib Overview
+## Base datasets
 
-The code library includes 11 DL-based website fingerprinting attacks.
+This project assumes the original CW dataset from WFlib.
 
-| Attacks | Conference  | Paper | Code |
-|----------|----------|----------|----------|
-| AWF | NDSS 2018 | [Automated Website Fingerprinting through Deep Learning](https://arxiv.org/pdf/1708.06376) | [DLWF](https://github.com/DistriNet/DLWF) |
-| DF | CCS 2018 | [Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning](https://dl.acm.org/doi/pdf/10.1145/3243734.3243768) | [df](https://github.com/deep-fingerprinting/df) |
-| Tik-Tok | PETS 2019 | [Tik-Tok: The Utility of Packet Timing in Website Fingerprinting Attacks](https://petsymposium.org/popets/2020/popets-2020-0043.pdf) | [Tik_Tok](https://github.com/msrocean/Tik_Tok) |
-| Var-CNN | PETS 2019 | [Var-CNN: A Data-Efficient Website Fingerprinting Attack Based on Deep Learning](https://arxiv.org/pdf/1802.10215) | [Var-CNN](https://github.com/sanjit-bhat/Var-CNN) |
-| TF | CCS 2019 | [Triplet Fingerprinting: More Practical and Portable Website Fingerprinting with N-shot Learning](https://dl.acm.org/doi/pdf/10.1145/3319535.3354217) | [tf](https://github.com/triplet-fingerprinting/tf) |
-| BAPM | ACSAC 2021 | [BAPM: Block Attention Profiling Model for Multi-tab Website Fingerprinting Attacks on Tor](https://dl.acm.org/doi/pdf/10.1145/3485832.3485891) | None |
-| ARES | S&P 2023 | [Robust Multi-tab Website Fingerprinting Attacks in the Wild](https://arxiv.org/pdf/2501.12622) | [Multitab-WF-Datasets](https://github.com/Xinhao-Deng/Multitab-WF-Datasets) |
-| RF | Security 2023 | [Subverting Website Fingerprinting Defenses with Robust Traffic Representation](https://www.usenix.org/system/files/sec23fall-prepub-621_shen-meng.pdf) | [RF](https://github.com/robust-fingerprinting/RF) |
-| NetCLR | CCS 2023 | [Realistic Website Fingerprinting By Augmenting Network Trace](https://arxiv.org/pdf/2309.10147) | [Realistic-Website-Fingerprinting-By-Augmenting-Network-Traces](https://github.com/SPIN-UMass/Realistic-Website-Fingerprinting-By-Augmenting-Network-Traces) |
-| TMWF | CCS 2023 | [Transformer-based Model for Multi-tab Website Fingerprinting Attack](https://dl.acm.org/doi/abs/10.1145/3576915.3623107) | [TMWF](https://github.com/jzx-bupt/TMWF) |
-| Holmes | CCS 2024 | [Robust and Reliable Early-Stage Website Fingerprinting Attacks via Spatial-Temporal Distribution Analysis](https://arxiv.org/pdf/2407.00918) | [WFlib](https://github.com/Xinhao-Deng/Website-Fingerprinting-Library)|
+1. Create a datasets folder:
 
-
-We implemented all attacks using the same framework (Pytorch) and a consistent coding style, enabling researchers to evaluate and compare existing attacks easily.
-
-## Usage
-
-### Install 
-
-```sh
-git clone git@github.com:Xinhao-Deng/Website-Fingerprinting-Library.git
-pip install --user .
+```bash
+mkdir -p datasets
 ```
 
-**Note**
+2. Download WFlib datasets (including `CW.npz`) from:
 
-- Python 3.8 is required.
+   https://zenodo.org/records/13732130
 
-### Datasets
+3. Place the files under:
 
-```sh
-mkdir datasets
+```text
+./datasets/CW.npz
 ```
 
-- Download datasets ([link](https://zenodo.org/records/13732130)) and place it in the folder `./datasets`
+4. Split CW into train/valid/test (if not already split):
 
-| Datasets | # of monitored websites | # of instances | Intro |
-| --- | --- | --- | --- |
-| CW.npz | 95 | 105730 | Closed-world dataset. [Details](https://dl.acm.org/doi/pdf/10.1145/3243734.3243768)|
-| OW.npz |  95 | 146446 | Open-world dataset. [Details](https://dl.acm.org/doi/pdf/10.1145/3243734.3243768) |
-| WTF-PAD.npz | 95 | 105730 | Dataset with WTF-PAD defense. [Details](https://arxiv.org/pdf/1512.00524) |
-| Front.npz |  95 | 95000 | Dataset with Front defense. [Details](https://www.usenix.org/system/files/sec20-gong.pdf) |
-| Walkie-Talkie.npz |  100 | 90000 | Dataset with Walkie-Talkie defense. [Details](https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-wang-tao.pdf) |
-| TrafficSliver.npz |  95 | 95000 | Dataset with TrafficSliver defense. [Details](https://sebastianreuter.info/publications/pdf/ccs-trafficsliver.pdf) |
-| NCDrift_sup.npz |  93 | 21430 | Network condition drift dataset, including superior traces. [Details](https://arxiv.org/pdf/2309.10147) |
-| NCDrift_inf.npz |  93 | 6882 | Network condition drift dataset, including inferior traces. [Details](https://arxiv.org/pdf/2309.10147) |
-| Closed_2tab.npz |  100 | 58000 | 2-tab dataset in the closed-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf) |
-| Closed_3tab.npz |  100 | 58000 | 3-tab dataset in the closed-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf)  |
-| Closed_4tab.npz |  100 | 58000 | 4-tab dataset in the closed-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf)  |
-| Closed_5tab.npz |  100 | 58000 | 5-tab dataset in the closed-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf)  |
-| Open_2tab.npz |  100 | 64000 | 2-tab dataset in the open-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf)  |
-| Open_3tab.npz |  100 | 64000 | 3-tab dataset in the open-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf)  |
-| Open_4tab.npz |  100 | 64000 | 4-tab dataset in the open-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf) |
-| Open_5tab.npz |  100 | 64000 | 5-tab dataset in the open-world scenario. [Details](http://www.thucsnet.com/wp-content/papers/xinhao_sp2023.pdf) |
-
-
-- The extracted dataset is in npz format and contains two values: X and y. X represents the cell sequence, with values being the direction (e.g., 1 or -1) multiplied by the timestamp. y corresponds to the labels. Note that the input of some datasets consists only of direction sequences.
-
-- Divide the dataset into training, validation, and test sets.
-
-```sh
-# For single-tab datasets
+```bash
 python exp/dataset_process/dataset_split.py --dataset CW
-# For multi-tab datasets
-python exp/dataset_process/dataset_split.py --dataset Closed_2tab --use_stratify False
 ```
 
-### Training \& Evaluation
+This produces `CW_train.npz`, `CW_valid.npz`, and `CW_test.npz` under `datasets/` using WFlib’s standard split logic.
 
-We provide all experiment scripts for WF attacks in the folder `./scripts/`. For example, you can reproduce the DF attack on the CW dataset by executing the following command.
+***
 
-```sh
-bash scripts/DF.sh
+## Generating Tamaraw-defended CW traces
+
+We generate **Tamaraw-protected** traces for the CW dataset, for a chosen pad length `PadL` and parameters matching Tamaraw’s design.
+
+The main entry point is:
+
+```bash
+python run_Tamaraw_CW.py \
+  --input_dataset CW \
+  --output_prefix CW_tamaraw \
+  --pad_length PADL \
+  [other Tamaraw parameters...]
 ```
 
-The `./scripts/DF.sh` file contains the commands for model training and evaluation.
+Typical usage:
 
-```sh
-dataset=CW
+```bash
+# Example: generate Tamaraw-defended CW dataset with a given PadL
+python run_Tamaraw_CW.py \
+  --input_dataset CW \
+  --output_prefix CW_tamaraw \
+  --pad_length 2000
+```
+
+This script:
+
+- reads the original CW split (`CW_train`, `CW_valid`, `CW_test`),
+- applies Tamaraw padding with the chosen pad length,
+- writes Tamaraw-defended splits under names like:
+  - `CW_tamaraw_train.npz`
+  - `CW_tamaraw_valid.npz`
+  - `CW_tamaraw_test.npz`
+
+Check `run_Tamaraw_CW.py` for the exact CLI arguments (pad length, packet rate, burst sizes, etc.).
+
+***
+
+## Building one-page datasets
+
+For each Tamaraw-defended CW dataset, we construct **one-page** datasets following Wang’s one-page setting.
+
+To build the one-page dataset for a given `CW_tamaraw` and sequence length 5000:
+
+```bash
+# inside repo root
+dataset=CW_tamaraw
+
+for split in train valid test
+do
+  python -u exp/dataset_process/gen_tam.py \
+    --dataset ${dataset} \
+    --seq_len 5000 \
+    --in_file ${split}
+done
+```
+
+This produces processed files such as:
+
+- `datasets/CW_tamaraw_tam_train.npz`
+- `datasets/CW_tamaraw_tam_valid.npz`
+- `datasets/CW_tamaraw_tam_test.npz`
+
+These are used for the RF (TAM feature) experiments; DF/TikTok/Var-CNN experiments use direction/timing features directly from `CW_tamaraw`.
+
+If you want to automate multiple pad lengths and one-page configurations, see:
+
+```bash
+./run_onepage_experiments.sh
+```
+
+This script loops over PadL values, generates Tamaraw datasets, then runs all attacks in the one-page setting.
+
+***
+
+## Running the attacks
+
+We evaluate **DF, TikTok, Var-CNN, and RF** on Tamaraw-defended CW in the one-page setting. Below are the core commands (for a single PadL and the dataset name `CW_tamaraw`).
+
+### DF (Deep Fingerprinting)
+
+```bash
+dataset=CW_tamaraw
 
 python -u exp/train.py \
   --dataset ${dataset} \
   --model DF \
-  --device cuda:1 \
+  --device cuda:0 \
   --feature DIR \
   --seq_len 5000 \
   --train_epochs 30 \
@@ -126,7 +165,7 @@ python -u exp/train.py \
 python -u exp/test.py \
   --dataset ${dataset} \
   --model DF \
-  --device cuda:1 \
+  --device cuda:0 \
   --feature DIR \
   --seq_len 5000 \
   --batch_size 256 \
@@ -134,14 +173,141 @@ python -u exp/test.py \
   --load_name max_f1
 ```
 
-The meanings of all parameters can be found in the `exp/train.py` and `exp/test.py` files. WFlib supports modifying parameters to easily implement different attacks. Moreover, you can use WFlib to implement combinations of different attacks or perform ablation analysis.
+### TikTok
+
+```bash
+dataset=CW_tamaraw
+
+python -u exp/train.py \
+  --dataset ${dataset} \
+  --model TikTok \
+  --device cuda:0 \
+  --feature DT \
+  --seq_len 5000 \
+  --train_epochs 30 \
+  --batch_size 128 \
+  --learning_rate 2e-3 \
+  --optimizer Adamax \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --save_metric F1-score \
+  --save_name max_f1
+
+python -u exp/test.py \
+  --dataset ${dataset} \
+  --model TikTok \
+  --device cuda:0 \
+  --feature DT \
+  --seq_len 5000 \
+  --batch_size 256 \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --load_name max_f1
+```
+
+### RF (Robust Fingerprinting) on Tamaraw one-page features
+
+Assuming you have already run `gen_tam.py` (see “Building one-page datasets”):
+
+```bash
+dataset=CW_tamaraw
+
+python -u exp/train.py \
+  --dataset ${dataset} \
+  --model RF \
+  --device cuda:0 \
+  --train_file tam_train \
+  --valid_file tam_valid \
+  --feature TAM \
+  --seq_len 1800 \
+  --train_epochs 30 \
+  --batch_size 200 \
+  --learning_rate 5e-4 \
+  --optimizer Adam \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --save_metric F1-score \
+  --save_name max_f1
+
+python -u exp/test.py \
+  --dataset ${dataset} \
+  --model RF \
+  --device cuda:0 \
+  --test_file tam_test \
+  --feature TAM \
+  --seq_len 1800 \
+  --batch_size 256 \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --load_name max_f1
+```
+
+### Var-CNN
+
+```bash
+dataset=CW_tamaraw
+
+python -u exp/train.py \
+  --dataset ${dataset} \
+  --model VarCNN \
+  --device cuda:0 \
+  --feature DT2 \
+  --seq_len 5000 \
+  --train_epochs 30 \
+  --batch_size 50 \
+  --learning_rate 1e-3 \
+  --optimizer Adam \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --save_metric F1-score \
+  --save_name max_f1
+
+python -u exp/test.py \
+  --dataset ${dataset} \
+  --model VarCNN \
+  --device cuda:0 \
+  --feature DT2 \
+  --seq_len 5000 \
+  --batch_size 256 \
+  --eval_metrics Accuracy Precision Recall F1-score \
+  --load_name max_f1
+```
+
+All metrics and logs are saved under `./exp/logs/` and corresponding result folders, following the original WFlib conventions.
+
+***
+
+## Inspecting and summarizing results
+
+We provide helper code to inspect and summarize results across pad lengths and attacks:
+
+- `peek_onepage_results.py`: parses experiment logs and prints/exports accuracy, precision, recall, F1-score vs pad length.
+
+Typical usage:
+
+```bash
+python peek_onepage_results.py \
+  --results_dir exp/logs/ \
+  --output_csv results/onepage_summary.csv
+```
+
+Adjust `--results_dir` to where your training scripts write logs.
+
+***
+
+## Reference / Attribution
+
+This project is **based on**:
+
+- X. Deng, Q. Li, and K. Xu, “Robust and Reliable Early-Stage Website Fingerprinting Attacks via Spatial-Temporal Distribution Analysis,” CCS 2024 (WFlib).
+
+If you use this repository in academic work, please cite both Deng et al.’s WFlib paper and our Tamaraw trade-off work (add your BibTeX once finalized).
+
+***
 
 ## Contact
-If you have any questions or suggestions, feel free to contact:
 
-- [Xinhao Deng](https://xinhao-deng.github.io/) (dengxh23@mails.tsinghua.edu.cn)
-- Yixiang Zhang (zhangyix24@mails.tsinghua.edu.cn)
+For questions about this Tamaraw one-page trade-off code:
 
-## Acknowledgements
+- Dong Quan Tran (Johnny) - dxt9721@mavs.uta.edu / dongquan.tran.johnny@gmail.com
 
-We would like to thank all the authors of the referenced papers.
+For questions about the original WFlib:
+
+- Xinhao Deng – dengxh23@mails.tsinghua.edu.cn  
+
+***
