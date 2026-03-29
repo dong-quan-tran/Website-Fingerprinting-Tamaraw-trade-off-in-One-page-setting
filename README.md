@@ -296,7 +296,7 @@ This project is **based on**:
 
 - X. Deng, Q. Li, and K. Xu, “Robust and Reliable Early-Stage Website Fingerprinting Attacks via Spatial-Temporal Distribution Analysis,” CCS 2024 (WFlib).
 
-If you use this repository in academic work, please cite both Deng et al.’s WFlib paper and our Tamaraw trade-off work.
+If you use this repository in academic work, please cite both Deng et al.’s WFlib paper and our Tamaraw trade-off work. (Source citation in progress)
 
 ***
 
