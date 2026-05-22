@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PADLS=(1 50 100 150 200 300 400 500)
-P_VALUES=(0.005 0.010 0.020)   # 5ms, 10ms, 20ms
+PADLS=(1 50 100 200 300 400 500 600 700 800 900 1000 1100 1200 1300 1400 1500)
+P_VALUES=(0.005 0.010 0.015 0.020)   # 5ms, 10ms, 20ms
 L_VALUE=0
 G_VALUE=0
 
@@ -32,7 +32,7 @@ echo "Logging to ${LOG_FILE}"
       echo "Start: $(date)"
       echo "--------------------------------------------------"
 
-      python run_tamaraw_CW.py \
+      python -u run_tamaraw_CW.py \
         --padl "${PADL}" \
         --p_in "${P}" \
         --p_out "${P}" \
