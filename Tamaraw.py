@@ -22,22 +22,22 @@ tardist = [[], []]
 defpackets = []
 
 # Global tuning parameters (defaults preserve original behavior)
-P_OUT = 0.04   # outgoing packet interval
-P_IN = 0.012   # incoming packet interval
+P_OUT = 0.04   # outgoing packet interval in seconds
+P_IN = 0.012   # incoming packet interval in seconds
 L = 0          # reserved for future tuning
 G = 0          # reserved for future tuning
 
 
-def set_parameters(pin=None, pout=None, l=None, g=None):
+def set_parameters(p_in=None, p_out=None, l=None, g=None):
     """
     Update global Tamaraw parameters in a tuning-friendly way.
 
     Parameters
     ----------
-    pin : float or None
-        Incoming packet interval.
-    pout : float or None
-        Outgoing packet interval.
+    p_in : float or None
+        Incoming packet interval in seconds.
+    p_out : float or None
+        Outgoing packet interval in seconds.
     l : int or float or None
         Reserved parameter for future Tamaraw tuning.
     g : int or float or None
@@ -45,10 +45,10 @@ def set_parameters(pin=None, pout=None, l=None, g=None):
     """
     global P_IN, P_OUT, L, G
 
-    if pin is not None:
-        P_IN = float(pin)
-    if pout is not None:
-        P_OUT = float(pout)
+    if p_in is not None:
+        P_IN = float(p_in)
+    if p_out is not None:
+        P_OUT = float(p_out)
     if l is not None:
         L = l
     if g is not None:
@@ -60,8 +60,8 @@ def get_parameters():
     Return the currently active Tamaraw parameters.
     """
     return {
-        "pin": P_IN,
-        "pout": P_OUT,
+        "p_in": P_IN,
+        "p_out": P_OUT,
         "L": L,
         "G": G,
     }
@@ -234,9 +234,8 @@ if __name__ == "__main__":
 
     args = sys.argv[1:]
 
-    # Optional CLI compatibility for standalone use:
-    #   python Tamaraw.py pin pout L G
-    # If fewer than 4 values are provided, defaults are used for missing ones.
+    # Optional standalone CLI compatibility:
+    #   python Tamaraw.py p_in p_out L G
     if len(args) >= 1:
         P_IN = float(args[0])
     if len(args) >= 2:
